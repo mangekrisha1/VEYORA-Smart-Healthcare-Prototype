@@ -1,0 +1,43 @@
+<mxfile host="app.diagrams.net" agent="veyora" version="24.0.0">
+  <diagram id="veyora-architecture" name="System Architecture">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="760" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="VEYORA — System Architecture (actual implementation)" style="text;html=1;fontSize=18;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="250" y="20" width="600" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="actors" value="Actors (roles): Patient · Doctor · Project Manager" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1EC;strokeColor=#096C60;" vertex="1" parent="1">
+          <mxGeometry x="330" y="70" width="440" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="spa" value="React SPA (Vite + TypeScript)&#10;Landing · Login · Patient views · Doctor view · PM workspace&#10;Motion (UI transitions, respects prefers-reduced-motion)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DEE5DF;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="300" y="160" width="500" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="proxy" value="Vite dev proxy  /api → 127.0.0.1:5000 (same-origin cookies + CSRF)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7F8F5;strokeColor=#DEE5DF;" vertex="1" parent="1">
+          <mxGeometry x="330" y="280" width="440" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="api" value="Flask REST API (backend/app)&#10;Auth: hashed passwords, server sessions (HttpOnly, SameSite=Lax), CSRF token&#10;RBAC: per-endpoint role guards · Appointments · Health logs · Reminders&#10;Risks · Tasks · Milestones · Verification · Plan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#096C60;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="250" y="360" width="600" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sched" value="schedule.py&#10;weekly rosters, slots computed&#10;from runtime date (Asia/Kolkata)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7F8F5;strokeColor=#DEE5DF;" vertex="1" parent="1">
+          <mxGeometry x="60" y="370" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="db" value="SQLAlchemy ORM&#10;SQLite file: backend/veyora.db&#10;partial unique index uq_active_slot" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#FFFFFF;strokeColor=#096C60;" vertex="1" parent="1">
+          <mxGeometry x="450" y="520" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="tests" value="pytest suite (42 tests)&#10;isolated file-backed DBs + live-server race test" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7F8F5;strokeColor=#DEE5DF;" vertex="1" parent="1">
+          <mxGeometry x="760" y="520" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="actors" target="spa"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="spa" target="proxy"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="proxy" target="api"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="api" target="db"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;" edge="1" parent="1" source="sched" target="api"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;" edge="1" parent="1" source="tests" target="api"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="note" value="Out of scope (not drawn as components): video consults, prescriptions, payments, SMS/email/push, AI diagnosis, offline sync, hospital integrations." style="text;html=1;fontSize=11;fontColor=#66756F;align=center;" vertex="1" parent="1">
+          <mxGeometry x="250" y="650" width="620" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,20 @@
+# secrets & local state
+.env
+.env.*
+backend/veyora.db
+backend/backups/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# node / build output
+node_modules/
+dist/
+
+# editors / OS
+.DS_Store
+.idea/
+.vscode/

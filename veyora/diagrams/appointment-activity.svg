@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1060" font-family="Manrope, system-ui, sans-serif">
+  <rect width="900" height="1060" fill="#F7F8F5"/>
+  <text x="450" y="38" text-anchor="middle" font-size="20" font-weight="800" fill="#182521">Appointment booking — activity diagram</text>
+  <style>
+    .node { fill:#FFFFFF; stroke:#096C60; }
+    .node-t { font-size:12.5px; fill:#182521; font-weight:600; text-anchor:middle; }
+    .sub { font-size:10.5px; fill:#66756F; text-anchor:middle; }
+    .flow { stroke:#66756F; stroke-width:1.6; fill:none; marker-end:url(#ar); }
+    .lbl { font-size:11px; fill:#6F5A1E; font-weight:700; }
+  </style>
+
+  <circle cx="445" cy="78" r="14" fill="#182521"/>
+  <rect x="290" y="118" width="310" height="44" rx="12" class="node"/>
+  <text x="445" y="145" class="node-t">Patient signs in (session + CSRF issued)</text>
+
+  <rect x="290" y="192" width="310" height="44" rx="12" class="node"/>
+  <text x="445" y="219" class="node-t">Choose doctor (specialty filter available)</text>
+
+  <rect x="290" y="266" width="310" height="56" rx="12" class="node"/>
+  <text x="445" y="288" class="node-t">Choose future date (from runtime date;</text>
+  <text x="445" y="304" class="node-t">non-clinic days disabled)</text>
+
+  <rect x="290" y="352" width="310" height="60" rx="12" class="node"/>
+  <text x="445" y="374" class="node-t">GET slots for date</text>
+  <text x="445" y="392" class="sub">availability computed; other patients' identities never returned</text>
+
+  <rect x="290" y="442" width="310" height="44" rx="12" class="node"/>
+  <text x="445" y="469" class="node-t">Select available slot and review</text>
+
+  <rect x="290" y="516" width="310" height="52" rx="12" fill="#E8F1EC" stroke="#096C60"/>
+  <text x="445" y="538" class="node-t" font-weight="800">POST /api/appointments</text>
+  <text x="445" y="556" class="sub">transactional INSERT</text>
+
+  <polygon points="445,600 560,660 445,720 330,660" fill="#F5EEDC" stroke="#6F5A1E"/>
+  <text x="445" y="656" class="node-t">Slot still free?</text>
+  <text x="445" y="672" class="sub">(partial unique index)</text>
+
+  <rect x="100" y="760" width="280" height="56" rx="12" fill="#E8F1EC" stroke="#096C60"/>
+  <text x="240" y="782" class="node-t">HTTP 201 — CONFIRMED saved</text>
+  <text x="240" y="800" class="sub">reminder appears in overview</text>
+
+  <rect x="520" y="760" width="290" height="56" rx="12" fill="#F5E3DD" stroke="#8E3B24"/>
+  <text x="665" y="782" class="node-t">HTTP 409 — friendly conflict message</text>
+  <text x="665" y="800" class="sub">doctor + date kept; pick another slot</text>
+
+  <rect x="210" y="866" width="480" height="56" rx="12" class="node"/>
+  <text x="450" y="888" class="node-t">Later: patient cancels → CANCELLED, slot released ·</text>
+  <text x="450" y="906" class="node-t">or doctor marks COMPLETED (terminal states enforced)</text>
+
+  <circle cx="450" cy="980" r="14" fill="#182521"/>
+  <circle cx="450" cy="980" r="19" fill="none" stroke="#182521" stroke-width="2"/>
+
+  <path d="M445 92 V118" class="flow"/>
+  <path d="M445 162 V192" class="flow"/>
+  <path d="M445 236 V266" class="flow"/>
+  <path d="M445 322 V352" class="flow"/>
+  <path d="M445 412 V442" class="flow"/>
+  <path d="M445 486 V516" class="flow"/>
+  <path d="M445 568 V600" class="flow"/>
+  <path d="M330 660 H240 V760" class="flow"/>
+  <text x="252" y="700" class="lbl">yes</text>
+  <path d="M560 660 H665 V760" class="flow"/>
+  <text x="575" y="650" class="lbl">no (IntegrityError)</text>
+  <path d="M810 788 H860 V382 H600" class="flow" stroke-dasharray="6 5"/>
+  <text x="700" y="372" class="lbl">retry: pick another slot</text>
+  <path d="M240 816 V894 H210" class="flow"/>
+  <path d="M450 922 V961" class="flow"/>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#66756F"/>
+    </marker>
+  </defs>
+</svg>

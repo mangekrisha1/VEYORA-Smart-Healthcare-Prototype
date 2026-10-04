@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.14, pytest-9.0.3, pluggy-1.6.0
+rootdir: /home/user/veyora/backend
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.14.2
+collected 42 items
+
+tests/test_appointments.py .........                                     [ 21%]
+tests/test_auth.py ........                                              [ 40%]
+tests/test_authorization.py ......                                       [ 54%]
+tests/test_health_logs.py ......                                         [ 69%]
+tests/test_persistence.py ..                                             [ 73%]
+tests/test_reminders.py ...                                              [ 80%]
+tests/test_risks_tasks.py ........                                       [100%]
+
+============================= 42 passed in 31.42s ==============================

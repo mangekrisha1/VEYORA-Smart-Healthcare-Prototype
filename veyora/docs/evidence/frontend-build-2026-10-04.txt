@@ -1,0 +1,4 @@
+dist/index.html                   1.22 kB │ gzip:   0.66 kB
+dist/assets/index-C4IttNA3.css   24.03 kB │ gzip:   5.50 kB
+dist/assets/index-BEGKuMhR.js   340.79 kB │ gzip: 106.83 kB
+✓ built in 14.05s

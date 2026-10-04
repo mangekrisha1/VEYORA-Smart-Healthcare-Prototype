@@ -1,0 +1,35 @@
+<mxfile host="app.diagrams.net" agent="veyora" version="24.0.0">
+  <diagram id="veyora-activity" name="Appointment Booking Activity">
+    <mxGraphModel dx="1100" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1150" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t" value="Appointment booking — activity diagram" style="text;html=1;fontSize=18;fontStyle=1;align=center;" vertex="1" parent="1"><mxGeometry x="240" y="20" width="420" height="30" as="geometry" /></mxCell>
+        <mxCell id="s" style="ellipse;fillColor=#182521;" vertex="1" parent="1"><mxGeometry x="430" y="70" width="30" height="30" as="geometry" /></mxCell>
+        <mxCell id="n1" value="Patient signs in (session + CSRF issued)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#096C60;" vertex="1" parent="1"><mxGeometry x="300" y="130" width="290" height="44" as="geometry" /></mxCell>
+        <mxCell id="n2" value="Choose doctor (specialty filter available)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#096C60;" vertex="1" parent="1"><mxGeometry x="300" y="204" width="290" height="44" as="geometry" /></mxCell>
+        <mxCell id="n3" value="Choose future date (generated from runtime date; non-clinic days disabled)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#096C60;" vertex="1" parent="1"><mxGeometry x="300" y="278" width="290" height="56" as="geometry" /></mxCell>
+        <mxCell id="n4" value="GET slots for date&#10;(availability computed; other patients' identities never returned)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#096C60;" vertex="1" parent="1"><mxGeometry x="300" y="364" width="290" height="60" as="geometry" /></mxCell>
+        <mxCell id="n5" value="Select available time slot and review" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#096C60;" vertex="1" parent="1"><mxGeometry x="300" y="454" width="290" height="44" as="geometry" /></mxCell>
+        <mxCell id="n6" value="POST /api/appointments&#10;(transactional INSERT)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1EC;strokeColor=#096C60;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="300" y="528" width="290" height="52" as="geometry" /></mxCell>
+        <mxCell id="d1" value="Slot still free?&#10;(partial unique index)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F5EEDC;strokeColor=#6F5A1E;" vertex="1" parent="1"><mxGeometry x="360" y="610" width="170" height="90" as="geometry" /></mxCell>
+        <mxCell id="n7" value="HTTP 201 — CONFIRMED saved&#10;reminder appears in overview" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1EC;strokeColor=#096C60;" vertex="1" parent="1"><mxGeometry x="120" y="740" width="260" height="56" as="geometry" /></mxCell>
+        <mxCell id="n8" value="HTTP 409 — friendly conflict message&#10;doctor + date kept; pick another slot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5E3DD;strokeColor=#8E3B24;" vertex="1" parent="1"><mxGeometry x="520" y="740" width="270" height="56" as="geometry" /></mxCell>
+        <mxCell id="n9" value="Later: patient cancels → status CANCELLED, slot released&#10;or doctor marks COMPLETED (terminal states enforced)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#096C60;" vertex="1" parent="1"><mxGeometry x="220" y="850" width="450" height="56" as="geometry" /></mxCell>
+        <mxCell id="e" style="ellipse;fillColor=#182521;" vertex="1" parent="1"><mxGeometry x="430" y="950" width="30" height="30" as="geometry" /></mxCell>
+        <mxCell id="f1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="s" target="n1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="n1" target="n2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="n2" target="n3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="n3" target="n4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="n4" target="n5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="n5" target="n6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="n6" target="d1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f8" value="yes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="d1" target="n7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f9" value="no (IntegrityError)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="d1" target="n8"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="n8" target="n4"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="840" y="394" /></Array></mxGeometry></mxCell>
+        <mxCell id="f11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="n7" target="n9"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="n9" target="e"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

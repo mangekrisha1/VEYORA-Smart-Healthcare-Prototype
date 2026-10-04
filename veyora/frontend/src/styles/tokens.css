@@ -1,0 +1,58 @@
+/* VEYORA design tokens — from the reference export's visual identity. */
+:root {
+  /* Colour */
+  --bg: #F7F8F5;          /* warm ivory background */
+  --surface: #FFFFFF;     /* white surfaces */
+  --ink: #182521;         /* charcoal text */
+  --muted: #66756F;       /* muted text */
+  --accent: #096C60;      /* teal accent */
+  --accent-strong: #07564C;
+  --sage: #E8F1EC;        /* pale sage tint */
+  --border: #DEE5DF;      /* thin borders */
+  --hero: #101C19;        /* dark hero */
+  --hero-ink: #F7F8F5;
+
+  /* Status tints (kept quiet, not alarmist) */
+  --ok-bg: #E8F1EC;      --ok-ink: #0B5D50;
+  --info-bg: #E9EEF6;    --info-ink: #2F4A77;
+  --warn-bg: #F5EEDC;    --warn-ink: #6F5A1E;
+  --danger-bg: #F5E3DD;  --danger-ink: #8E3B24;
+  --neutral-bg: #EEF1EE; --neutral-ink: #55645E;
+
+  /* Risk bands (project-risk priorities, not clinical) */
+  --band-low: #E8F1EC;      --band-low-ink: #0B5D50;
+  --band-moderate: #F5EEDC; --band-moderate-ink: #6F5A1E;
+  --band-high: #F5E3DD;     --band-high-ink: #8E3B24;
+  --band-critical: #EBD2CE; --band-critical-ink: #7C2416;
+
+  /* Type */
+  --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, sans-serif;
+
+  /* Shape & depth */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --shadow-sm: 0 1px 2px rgba(16, 28, 25, 0.05);
+  --shadow-md: 0 2px 6px rgba(16, 28, 25, 0.05), 0 10px 30px rgba(16, 28, 25, 0.07);
+  --shadow-lg: 0 8px 20px rgba(16, 28, 25, 0.10), 0 24px 60px rgba(16, 28, 25, 0.12);
+
+  /* Motion: 150–250 ms for ordinary UI transitions */
+  --t-fast: 150ms;
+  --t-med: 200ms;
+  --t-slow: 250ms;
+  --ease: cubic-bezier(0.25, 0.6, 0.3, 1);
+
+  /* Layout */
+  --sidebar-w: 240px;
+  --header-h: 64px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0ms;
+    --t-med: 0ms;
+    --t-slow: 0ms;
+  }
+}

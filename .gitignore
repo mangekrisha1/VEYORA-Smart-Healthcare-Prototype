@@ -52,3 +52,6 @@ venv/
 node_modules/
 dist/
 
+
+# Generated test output
+veyora/backend/pytest-output.txt

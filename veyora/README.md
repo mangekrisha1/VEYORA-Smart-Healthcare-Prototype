@@ -124,7 +124,7 @@ python docs\generate_docs.py
 
 | Role | Email | Password |
 | --- | --- | --- |
-| Patient | aarav.shah@veyora.demo | Patient@123 |
+| Patient |  aarav.shah@veyora.demo  | Patient@123 |
 | Patient | priya.nair@veyora.demo | Patient@123 |
 | Doctor (Cardiology) | meera.iyer@veyora.demo | Doctor@123 |
 | Doctor (General Medicine) | rohan.deshpande@veyora.demo | Doctor@123 |

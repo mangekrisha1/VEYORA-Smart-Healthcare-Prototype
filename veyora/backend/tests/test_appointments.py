@@ -1,4 +1,4 @@
-"""Appointment booking, conflicts, cancellation, transitions."""
+﻿"""Appointment booking, conflicts, cancellation, transitions."""
 from datetime import timedelta
 
 from conftest import (EMAILS, book, doctor_id_of, login, next_bookable_slot)
@@ -120,30 +120,68 @@ def test_cancellation_releases_slot(client):
     assert resp.status_code == 201
 
 
-def test_completed_transition_only_by_doctor(client):
+def test_completed_transition_only_by_doctor(client, monkeypatch):
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+    import app.api.appointments as appointment_routes
+
     doc_id = doctor_id_of(client, EMAILS["doctor"])
     date_iso, time_str = next_bookable_slot("Dr. Meera Iyer")
 
+    # Patient books an appointment.
     csrf_p = login(client, "patient")
-    appt_id = book(client, csrf_p, doc_id, date_iso, time_str).get_json()[
-        "appointment"]["id"]
-    # Patient cannot mark completed.
-    resp = client.patch(f"/api/appointments/{appt_id}", json={"status": "COMPLETED"},
-                        headers={"X-CSRF-Token": csrf_p})
+    created = book(client, csrf_p, doc_id, date_iso, time_str)
+    assert created.status_code == 201, created.get_data(as_text=True)
+    appt_id = created.get_json()["appointment"]["id"]
+
+    # Patient cannot complete an appointment.
+    resp = client.patch(
+        f"/api/appointments/{appt_id}",
+        json={"status": "COMPLETED"},
+        headers={"X-CSRF-Token": csrf_p},
+    )
     assert resp.status_code == 403
     client.post("/api/auth/logout", headers={"X-CSRF-Token": csrf_p})
 
+    # Simulate the scheduled appointment time having arrived.
+    scheduled_at = datetime.fromisoformat(
+        f"{date_iso}T{time_str}"
+    ).replace(tzinfo=ZoneInfo("Asia/Kolkata"))
+
+    monkeypatch.setattr(
+        appointment_routes,
+        "now_ist",
+        lambda: scheduled_at + timedelta(minutes=1),
+    )
+
+    # Doctor starts the consultation.
     csrf_d = login(client, "doctor")
-    resp = client.patch(f"/api/appointments/{appt_id}", json={"status": "COMPLETED"},
-                        headers={"X-CSRF-Token": csrf_d})
-    assert resp.status_code == 200
+    resp = client.patch(
+        f"/api/appointments/{appt_id}",
+        json={"action": "START"},
+        headers={"X-CSRF-Token": csrf_d},
+    )
+    assert resp.status_code == 200, resp.get_data(as_text=True)
+
+    # Doctor completes the consultation with a summary.
+    resp = client.patch(
+        f"/api/appointments/{appt_id}",
+        json={
+            "action": "COMPLETE",
+            "summary": "Consultation completed for automated test.",
+        },
+        headers={"X-CSRF-Token": csrf_d},
+    )
+    assert resp.status_code == 200, resp.get_data(as_text=True)
     assert resp.get_json()["appointment"]["status"] == "COMPLETED"
 
-    # Terminal state: no further transitions.
-    resp = client.patch(f"/api/appointments/{appt_id}", json={"status": "CANCELLED"},
-                        headers={"X-CSRF-Token": csrf_d})
-    assert resp.status_code == 400
-
+    # A completed appointment cannot be cancelled.
+    resp = client.patch(
+        f"/api/appointments/{appt_id}",
+        json={"status": "CANCELLED"},
+        headers={"X-CSRF-Token": csrf_d},
+    )
+    assert resp.status_code == 409
 
 def test_doctor_sees_only_own_appointments(client):
     doc_id = doctor_id_of(client, EMAILS["doctor"])
@@ -155,3 +193,5 @@ def test_doctor_sees_only_own_appointments(client):
     csrf_d2 = login(client, "doctor2")  # different doctor
     listing = client.get("/api/appointments").get_json()["appointments"]
     assert listing == []
+
+

@@ -30,3 +30,25 @@ yarn-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Python generated files
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.venv/
+venv/
+
+# Frontend generated files
+node_modules/
+dist/
+

@@ -1,0 +1,30 @@
+﻿services:
+  backend:
+    build:
+      context: ./veyora/backend
+      dockerfile: Dockerfile
+    environment:
+      VEYORA_SECRET_KEY: "local-demo-only-change-before-deployment"
+      VEYORA_DEMO_MODE: "1"
+      VEYORA_DB_PATH: "/data/veyora.db"
+      VEYORA_SECURE_COOKIES: "0"
+    volumes:
+      - veyora-data:/data
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./veyora/frontend
+      dockerfile: Dockerfile
+    environment:
+      VITE_BACKEND_PROXY_TARGET: "http://backend:5000"
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  veyora-data:

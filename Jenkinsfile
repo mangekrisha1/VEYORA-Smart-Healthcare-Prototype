@@ -21,7 +21,7 @@ pipeline {
                 bat '''
                     if not exist reports mkdir reports
 
-                    py -3 -m venv .ci-venv
+"C:\Program Files\Python314\python.exe" -m venv .ci-venv
                     if errorlevel 1 exit /b %errorlevel%
 
                     .ci-venv\\Scripts\\python.exe -m pip install --upgrade pip

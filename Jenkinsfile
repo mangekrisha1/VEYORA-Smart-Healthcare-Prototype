@@ -21,13 +21,13 @@ pipeline {
                 bat '''
                     if not exist reports mkdir reports
 
-"C:\Program Files\Python314\python.exe" -m venv .ci-venv
+                    "C:\\Program Files\\Python314\\python.exe" -m venv .ci-venv
                     if errorlevel 1 exit /b %errorlevel%
 
                     .ci-venv\\Scripts\\python.exe -m pip install --upgrade pip
                     if errorlevel 1 exit /b %errorlevel%
 
-                    .ci-venv\\Scripts\\python.exe -m pip install -rveyora\\backend\\requirements.txt
+                    .ci-venv\\Scripts\\python.exe -m pip install -r veyora\\backend\\requirements.txt
                     if errorlevel 1 exit /b %errorlevel%
 
                     .ci-venv\\Scripts\\python.exe -m pytest veyora\\backend\\tests --basetemp veyora\\backend\\.pytest-ci-tmp --junitxml=reports\\backend-junit.xml

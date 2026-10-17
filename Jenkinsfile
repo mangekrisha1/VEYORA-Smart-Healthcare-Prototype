@@ -1,83 +1,94 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS-22'
-    }
-
-    options {
-        timestamps()
-        timeout(time: 30, unit: 'MINUTES')
-        disableConcurrentBuilds()
-    }
-
     stages {
-
-        stage('Checkout') {
-            steps {
-                checkout scm
-                echo 'Source code checked out from GitHub.'
-            }
-        }
 
         stage('Backend Tests') {
             steps {
                 bat '''
-                    if not exist reports mkdir reports
+                    if not exist .ci-venv (
+                        py -3 -m venv .ci-venv
+                    )
 
-                    "C:\\Program Files\\Python314\\python.exe" -m venv .ci-venv
-                    if errorlevel 1 exit /b %errorlevel%
+                    call .ci-venv\\Scripts\\activate.bat
 
-                    .ci-venv\\Scripts\\python.exe -m pip install --upgrade pip
-                    if errorlevel 1 exit /b %errorlevel%
+                    python -m pip install --upgrade pip
+                    pip install -r veyora\\backend\\requirements.txt
 
-                    .ci-venv\\Scripts\\python.exe -m pip install -r veyora\\backend\\requirements.txt
-                    if errorlevel 1 exit /b %errorlevel%
+                    cd veyora\\backend
 
-                    .ci-venv\\Scripts\\python.exe -m pytest veyora\\backend\\tests --basetemp veyora\\backend\\.pytest-ci-tmp --junitxml=reports\\backend-junit.xml
+                    python -m pytest -q
+
+                    cd ..\\..
                 '''
             }
         }
 
         stage('Frontend Build') {
             steps {
-                dir('veyora/frontend') {
-                    bat 'node --version'
-                    bat 'npm --version'
-                    bat 'npm ci'
-                    bat 'npm run build'
-                }
+                bat '''
+                    cd veyora\\frontend
+
+                    npm ci
+                    npm run build
+
+                    cd ..\\..
+                '''
             }
         }
 
         stage('SonarQube SAST Scan') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    bat "${tool 'SonarScanner'}\\bin\\sonar-scanner.bat"
+                script {
+                    def scannerHome = tool name: 'SonarScanner'
+
+                    withSonarQubeEnv('SonarQube') {
+                        bat(
+                            script: """
+                                set "JAVA_HOME=C:\\Program Files\\Java\\jdk-25"
+                                set "PATH=%JAVA_HOME%\\bin;%PATH%"
+
+                                echo ===== JAVA VERSION =====
+                                "%JAVA_HOME%\\bin\\java.exe" -version
+
+                                echo ===== SONAR SCANNER VERSION =====
+                                "${scannerHome}\\bin\\sonar-scanner.bat" --version
+
+                                echo ===== STARTING SONARQUBE SAST SCAN =====
+                                "${scannerHome}\\bin\\sonar-scanner.bat" -Dsonar.host.url=http://localhost:9000
+
+                                echo ===== SONARQUBE SCAN COMPLETED =====
+                            """
+                        )
+                    }
                 }
             }
         }
 
         stage('Validate Docker Compose') {
             steps {
-                bat 'docker compose config --quiet'
+                bat '''
+                    docker compose config --quiet
+                '''
             }
         }
 
         stage('Build Docker Images') {
             steps {
-                bat 'docker compose build'
+                bat '''
+                    docker compose build
+                '''
             }
         }
     }
 
     post {
         always {
-            junit testResults: 'reports/backend-junit.xml',
-                  allowEmptyResults: true
+            junit allowEmptyResults: true,
+                  testResults: 'veyora/backend/test-results/*.xml'
 
-            archiveArtifacts artifacts: 'reports/**,veyora/frontend/dist/**',
-                             allowEmptyArchive: true
+            archiveArtifacts allowEmptyArchive: true,
+                    artifacts: 'veyora/backend/test-results/*.xml'
         }
 
         success {
@@ -85,7 +96,7 @@ pipeline {
         }
 
         failure {
-            echo 'Pipeline failed. Check the stage logs to identify the issue.'
+            echo 'VEYORA CI pipeline failed.'
         }
     }
 }

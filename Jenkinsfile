@@ -1,9 +1,13 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'NodeJS-22'
+    }
+
     options {
         timestamps()
-        timeout(time: 25, unit: 'MINUTES')
+        timeout(time: 30, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
 
@@ -38,6 +42,8 @@ pipeline {
         stage('Frontend Build') {
             steps {
                 dir('veyora/frontend') {
+                    bat 'node --version'
+                    bat 'npm --version'
                     bat 'npm ci'
                     bat 'npm run build'
                 }

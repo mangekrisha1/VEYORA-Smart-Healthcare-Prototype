@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -27,7 +26,7 @@ pipeline {
                     .ci-venv\\Scripts\\python.exe -m pip install --upgrade pip
                     if errorlevel 1 exit /b %errorlevel%
 
-                    .ci-venv\\Scripts\\python.exe -m pip install -r veyora\\backend\\requirements.txt
+                    .ci-venv\\Scripts\\python.exe -m pip install -rveyora\\backend\\requirements.txt
                     if errorlevel 1 exit /b %errorlevel%
 
                     .ci-venv\\Scripts\\python.exe -m pytest veyora\\backend\\tests --basetemp veyora\\backend\\.pytest-ci-tmp --junitxml=reports\\backend-junit.xml
@@ -40,6 +39,14 @@ pipeline {
                 dir('veyora/frontend') {
                     bat 'npm ci'
                     bat 'npm run build'
+                }
+            }
+        }
+
+        stage('SonarQube SAST Scan') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    bat 'sonar-scanner'
                 }
             }
         }

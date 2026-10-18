@@ -1,7 +1,14 @@
 pipeline {
+
     agent any
 
     stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
 
         stage('Backend Tests') {
             steps {
@@ -16,10 +23,8 @@ pipeline {
                     pip install -r veyora\\backend\\requirements.txt
 
                     cd veyora\\backend
-
                     python -m pytest -q
-
-                    cd ..\\..
+                    if errorlevel 1 exit /b 1
                 '''
             }
         }
@@ -27,12 +32,95 @@ pipeline {
         stage('Frontend Build') {
             steps {
                 bat '''
+                    set "PATH=C:\\Program Files\\nodejs;%PATH%"
+
+                    echo ===== NODE VERSION =====
+                    node --version
+
+                    echo ===== NPM VERSION =====
+                    npm --version
+
                     cd veyora\\frontend
 
+                    echo ===== NPM CI =====
                     npm ci
+                    if errorlevel 1 exit /b 1
+
+                    echo ===== NPM BUILD =====
                     npm run build
+                    if errorlevel 1 exit /b 1
 
                     cd ..\\..
+                '''
+            }
+        }
+
+        stage('Validate Docker Compose') {
+            steps {
+                bat '''
+                    set "PATH=C:\\Users\\billi\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;%PATH%"
+
+                    echo ===== DOCKER VERSION =====
+                    docker --version
+
+                    echo ===== DOCKER COMPOSE VERSION =====
+                    docker compose version
+
+                    echo ===== DOCKER COMPOSE VALIDATION =====
+                    docker compose config --quiet
+                    if errorlevel 1 exit /b 1
+                '''
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                bat '''
+                    set "PATH=C:\\Users\\billi\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;%PATH%"
+
+                    echo ===== BUILDING BACKEND IMAGE =====
+                    docker build -t veyora-ci-pipeline-backend:latest veyora\\backend
+                    if errorlevel 1 exit /b 1
+
+                    echo ===== BUILDING FRONTEND IMAGE =====
+                    docker build -t veyora-ci-pipeline-frontend:latest veyora\\frontend
+                    if errorlevel 1 exit /b 1
+
+                    echo ===== DOCKER IMAGES BUILT =====
+                    docker images | findstr "veyora-ci-pipeline"
+                '''
+            }
+        }
+
+        stage('Trivy Image Scan') {
+            steps {
+                bat '''
+                    if not exist trivy-reports mkdir trivy-reports
+
+                    echo ===== TRIVY VERSION =====
+                    "D:\\VEYORA-project\\trivy.exe" --version
+
+                    echo ===== SCANNING FRONTEND IMAGE =====
+                    "D:\\VEYORA-project\\trivy.exe" image ^
+                        --cache-dir "D:\\TrivyCache" ^
+                        --scanners vuln,misconfig,secret ^
+                        --format json ^
+                        --output "trivy-reports\\frontend-trivy-report.json" ^
+                        "veyora-ci-pipeline-frontend:latest"
+
+                    if errorlevel 1 exit /b 1
+
+                    echo ===== SCANNING BACKEND IMAGE =====
+                    "D:\\VEYORA-project\\trivy.exe" image ^
+                        --cache-dir "D:\\TrivyCache" ^
+                        --scanners vuln,misconfig,secret ^
+                        --format json ^
+                        --output "trivy-reports\\backend-trivy-report.json" ^
+                        "veyora-ci-pipeline-backend:latest"
+
+                    if errorlevel 1 exit /b 1
+
+                    echo ===== TRIVY SCAN COMPLETED =====
                 '''
             }
         }
@@ -40,9 +128,11 @@ pipeline {
         stage('SonarQube SAST Scan') {
             steps {
                 script {
+
                     def scannerHome = tool name: 'SonarScanner'
 
                     withSonarQubeEnv('SonarQube') {
+
                         bat(
                             script: """
                                 set "JAVA_HOME=C:\\Program Files\\Java\\jdk-25"
@@ -57,6 +147,8 @@ pipeline {
                                 echo ===== STARTING SONARQUBE SAST SCAN =====
                                 "${scannerHome}\\bin\\sonar-scanner.bat" -Dsonar.host.url=http://localhost:9000
 
+                                if errorlevel 1 exit /b 1
+
                                 echo ===== SONARQUBE SCAN COMPLETED =====
                             """
                         )
@@ -64,31 +156,23 @@ pipeline {
                 }
             }
         }
-
-        stage('Validate Docker Compose') {
-            steps {
-                bat '''
-                    docker compose config --quiet
-                '''
-            }
-        }
-
-        stage('Build Docker Images') {
-            steps {
-                bat '''
-                    docker compose build
-                '''
-            }
-        }
     }
 
     post {
+
         always {
+
+            echo '===== ARCHIVING TEST REPORTS ====='
+
             junit allowEmptyResults: true,
                   testResults: 'veyora/backend/test-results/*.xml'
 
+            echo '===== ARCHIVING TRIVY REPORTS ====='
+
             archiveArtifacts allowEmptyArchive: true,
-                    artifacts: 'veyora/backend/test-results/*.xml'
+                            artifacts: 'trivy-reports/*.json'
+
+            echo '===== VEYORA CI PIPELINE COMPLETED ====='
         }
 
         success {
@@ -96,7 +180,7 @@ pipeline {
         }
 
         failure {
-            echo 'VEYORA CI pipeline failed.'
+            echo 'VEYORA CI pipeline failed. Check the console log.'
         }
     }
 }

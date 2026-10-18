@@ -187,14 +187,13 @@ pipeline {
 
                                     echo ===== SONARQUBE SCAN COMPLETED =====
 
-                                    if not exist "report-task.txt" (
-                                        echo ERROR: SonarQube report-task.txt was not created.
-                                        exit /b 1
-                                    )
+if not exist ".scannerwork\report-task.txt" (
+    echo ERROR: SonarQube .scannerwork\report-task.txt was not created.
+    exit /b 1
+)
 
-                                    echo ===== SONARQUBE REPORT FOUND =====
-                                    dir "report-task.txt"
-                                """
+echo ===== SONARQUBE REPORT FOUND =====
+dir ".scannerwork\report-task.txt"
                             )
                         }
                     }

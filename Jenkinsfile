@@ -87,7 +87,7 @@ pipeline {
                     if errorlevel 1 exit /b 1
 
                     echo ===== DOCKER IMAGES BUILT =====
-                    docker images | findstr "veyora-ci-pipeline"
+                    docker images
                 '''
             }
         }

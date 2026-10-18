@@ -45,17 +45,25 @@ pipeline {
 
                     cd veyora\\frontend
 
-                    echo ===== NPM CI =====
+                    echo ===== RUNNING NPM CI =====
                     npm ci
 
                     if errorlevel 1 exit /b 1
 
-                    echo ===== NPM BUILD =====
+                    echo ===== RUNNING FRONTEND BUILD =====
                     npm run build
 
                     if errorlevel 1 exit /b 1
 
-                    cd ..\\..
+                    echo ===== FRONTEND BUILD COMPLETED =====
+
+                    if not exist dist (
+                        echo ERROR: Frontend dist folder was not created.
+                        exit /b 1
+                    )
+
+                    echo ===== FRONTEND DIST FOLDER FOUND =====
+                    dir dist
                 '''
             }
         }
@@ -75,6 +83,8 @@ pipeline {
                     docker compose config --quiet
 
                     if errorlevel 1 exit /b 1
+
+                    echo ===== DOCKER COMPOSE VALIDATION COMPLETED =====
                 '''
             }
         }
@@ -85,16 +95,19 @@ pipeline {
                     set "PATH=C:\\Users\\billi\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;%PATH%"
 
                     echo ===== BUILDING BACKEND IMAGE =====
+
                     docker build -t veyora-ci-pipeline-backend:latest veyora\\backend
 
                     if errorlevel 1 exit /b 1
 
                     echo ===== BUILDING FRONTEND IMAGE =====
+
                     docker build -t veyora-ci-pipeline-frontend:latest veyora\\frontend
 
                     if errorlevel 1 exit /b 1
 
                     echo ===== DOCKER IMAGES BUILT =====
+
                     docker images
                 '''
             }
@@ -106,9 +119,11 @@ pipeline {
                     if not exist trivy-reports mkdir trivy-reports
 
                     echo ===== TRIVY VERSION =====
+
                     "D:\\VEYORA-project\\trivy.exe" --version
 
                     echo ===== SCANNING FRONTEND IMAGE =====
+
                     "D:\\VEYORA-project\\trivy.exe" image ^
                         --cache-dir "D:\\TrivyCache" ^
                         --scanners vuln,misconfig,secret ^
@@ -119,6 +134,7 @@ pipeline {
                     if errorlevel 1 exit /b 1
 
                     echo ===== SCANNING BACKEND IMAGE =====
+
                     "D:\\VEYORA-project\\trivy.exe" image ^
                         --cache-dir "D:\\TrivyCache" ^
                         --scanners vuln,misconfig,secret ^
@@ -141,35 +157,46 @@ pipeline {
 
                     withSonarQubeEnv('SonarQube') {
 
-                        bat(
-                            script: """
-                                set "JAVA_HOME=C:\\Program Files\\Java\\jdk-25"
-                                set "PATH=%JAVA_HOME%\\bin;%PATH%"
+                        withCredentials([
+                            string(
+                                credentialsId: 'sonarqube-token',
+                                variable: 'SONAR_TOKEN'
+                            )
+                        ]) {
 
-                                echo ===== JAVA VERSION =====
-                                "%JAVA_HOME%\\bin\\java.exe" -version
+                            bat(
+                                script: """
+                                    set "JAVA_HOME=C:\\Program Files\\Java\\jdk-25"
+                                    set "PATH=%JAVA_HOME%\\bin;%PATH%"
 
-                                echo ===== SONAR SCANNER VERSION =====
-                                call "${scannerHome}\\bin\\sonar-scanner.bat" --version
+                                    echo ===== JAVA VERSION =====
+                                    "%JAVA_HOME%\\bin\\java.exe" -version
 
-                                if errorlevel 1 exit /b 1
+                                    echo ===== SONAR SCANNER VERSION =====
+                                    call "${scannerHome}\\bin\\sonar-scanner.bat" --version
 
-                                echo ===== STARTING SONARQUBE SAST SCAN =====
-                                call "${scannerHome}\\bin\\sonar-scanner.bat" -Dsonar.host.url=http://localhost:9000
+                                    if errorlevel 1 exit /b 1
 
-                                if errorlevel 1 exit /b 1
+                                    echo ===== STARTING SONARQUBE SAST SCAN =====
 
-                                echo ===== SONARQUBE SCAN COMPLETED =====
+                                    call "${scannerHome}\\bin\\sonar-scanner.bat" ^
+                                        -Dsonar.host.url=http://localhost:9000 ^
+                                        -Dsonar.token=%SONAR_TOKEN%
 
-                                if not exist "report-task.txt" (
-                                    echo ERROR: SonarQube report-task.txt was not created.
-                                    exit /b 1
-                                )
+                                    if errorlevel 1 exit /b 1
 
-                                echo ===== SONARQUBE REPORT FOUND =====
-                                dir "report-task.txt"
-                            """
-                        )
+                                    echo ===== SONARQUBE SCAN COMPLETED =====
+
+                                    if not exist "report-task.txt" (
+                                        echo ERROR: SonarQube report-task.txt was not created.
+                                        exit /b 1
+                                    )
+
+                                    echo ===== SONARQUBE REPORT FOUND =====
+                                    dir "report-task.txt"
+                                """
+                            )
+                        }
                     }
                 }
             }
@@ -179,25 +206,28 @@ pipeline {
     post {
 
         always {
-
             echo '===== ARCHIVING TEST REPORTS ====='
 
-            junit allowEmptyResults: true,
-                  testResults: 'veyora/backend/test-results/*.xml'
+            junit(
+                testResults: '**/test-results/**/*.xml',
+                allowEmptyResults: true
+            )
 
             echo '===== ARCHIVING TRIVY REPORTS ====='
 
-            archiveArtifacts allowEmptyArchive: true,
-                            artifacts: 'trivy-reports/*.json'
-
-            echo '===== VEYORA CI PIPELINE COMPLETED ====='
+            archiveArtifacts(
+                artifacts: 'trivy-reports/*.json',
+                allowEmptyArchive: true
+            )
         }
 
         success {
+            echo '===== VEYORA CI PIPELINE COMPLETED ====='
             echo 'VEYORA CI pipeline completed successfully.'
         }
 
         failure {
+            echo '===== VEYORA CI PIPELINE FAILED ====='
             echo 'VEYORA CI pipeline failed. Check the console log.'
         }
     }

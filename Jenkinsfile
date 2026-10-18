@@ -23,7 +23,10 @@ pipeline {
                     pip install -r veyora\\backend\\requirements.txt
 
                     cd veyora\\backend
+
+                    echo ===== RUNNING BACKEND TESTS =====
                     python -m pytest -q
+
                     if errorlevel 1 exit /b 1
                 '''
             }
@@ -44,10 +47,12 @@ pipeline {
 
                     echo ===== NPM CI =====
                     npm ci
+
                     if errorlevel 1 exit /b 1
 
                     echo ===== NPM BUILD =====
                     npm run build
+
                     if errorlevel 1 exit /b 1
 
                     cd ..\\..
@@ -68,6 +73,7 @@ pipeline {
 
                     echo ===== DOCKER COMPOSE VALIDATION =====
                     docker compose config --quiet
+
                     if errorlevel 1 exit /b 1
                 '''
             }
@@ -80,10 +86,12 @@ pipeline {
 
                     echo ===== BUILDING BACKEND IMAGE =====
                     docker build -t veyora-ci-pipeline-backend:latest veyora\\backend
+
                     if errorlevel 1 exit /b 1
 
                     echo ===== BUILDING FRONTEND IMAGE =====
                     docker build -t veyora-ci-pipeline-frontend:latest veyora\\frontend
+
                     if errorlevel 1 exit /b 1
 
                     echo ===== DOCKER IMAGES BUILT =====
@@ -142,14 +150,24 @@ pipeline {
                                 "%JAVA_HOME%\\bin\\java.exe" -version
 
                                 echo ===== SONAR SCANNER VERSION =====
-                                "${scannerHome}\\bin\\sonar-scanner.bat" --version
+                                call "${scannerHome}\\bin\\sonar-scanner.bat" --version
+
+                                if errorlevel 1 exit /b 1
 
                                 echo ===== STARTING SONARQUBE SAST SCAN =====
-                                "${scannerHome}\\bin\\sonar-scanner.bat" -Dsonar.host.url=http://localhost:9000
+                                call "${scannerHome}\\bin\\sonar-scanner.bat" -Dsonar.host.url=http://localhost:9000
 
                                 if errorlevel 1 exit /b 1
 
                                 echo ===== SONARQUBE SCAN COMPLETED =====
+
+                                if not exist "report-task.txt" (
+                                    echo ERROR: SonarQube report-task.txt was not created.
+                                    exit /b 1
+                                )
+
+                                echo ===== SONARQUBE REPORT FOUND =====
+                                dir "report-task.txt"
                             """
                         )
                     }

@@ -55,3 +55,17 @@ dist/
 
 # Generated test output
 veyora/backend/pytest-output.txt
+
+# secrets and terraform state
+*.pem
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+terraform/.terraform/
+.env
+
+# tools and local environments
+trivy.exe
+.ci-venv/
+node_modules/
+__pycache__/

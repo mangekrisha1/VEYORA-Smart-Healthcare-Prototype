@@ -69,3 +69,6 @@ trivy.exe
 .ci-venv/
 node_modules/
 __pycache__/
+
+# Generated Trivy scan reports
+trivy-reports/*.json
